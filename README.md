@@ -15,7 +15,7 @@ This software does produce a CW carrier at 2 different levels set to +20dBm and 
 It will start immediately to send a carrier at +20dBm during 10 s on 433.775 MHz. These are the default values that can be changed
 
 # Settings
-Change the first settings to fit to your board.
+Change the first settings to fit to your board and needs.
 
     //#define tbeam               // if LilyGo T-beam
     #define T3                  // if LilyGo T3 board
@@ -24,3 +24,7 @@ Change the first settings to fit to your board.
     double TXfreq = 433.775;    // frequency in MHz
     int TXpowerHi = 20;         // High power in dBm (max 20)
     int TXpowerLo = 10;         // Low power in dBm
+
+[!NOTE]
+You can change the frequency, depending your LoRa band.
+
