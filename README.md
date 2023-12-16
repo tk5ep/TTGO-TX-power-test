@@ -15,7 +15,7 @@ This software does produce a CW carrier at 2 different levels set to +20dBm and 
 It will start immediately to send a carrier at +20dBm during 10 s on 433.775 MHz. These are the default values that can be changed
 
 # Settings
-
+Change the first settings to fit to your board.
     //#define tbeam
     #define T3
     // comment out if using SSD1306 driver. 1.3" inch uses SH11106
