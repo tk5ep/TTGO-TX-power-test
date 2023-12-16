@@ -26,4 +26,6 @@ Change the first settings to fit to your board and needs.
     int TXpowerLo = 10;         // Low power in dBm
     
 > [!NOTE]
-You can change the frequency, depending your LoRa band.
+You must change the frequency, depending of your LoRa band supported by your LoRa module.
+
+Feedbacks are welcome.  
