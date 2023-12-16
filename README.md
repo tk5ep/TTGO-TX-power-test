@@ -17,11 +17,10 @@ It will start immediately to send a carrier at +20dBm during 10 s on 433.775 MHz
 # Settings
 Change the first settings to fit to your board.
 
-    //#define tbeam
-    #define T3
-    // comment out if using SSD1306 driver. 1.3" inch uses SH11106
-    #define ssd1306;  // defines the OLED driver type
+    //#define tbeam               // if LilyGo T-beam
+    #define T3                  // if LilyGo T3 board
+    #define ssd1306;            // defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
     int TXdelay   = 10000;      // TX delay in ms at each power
     double TXfreq = 433.775;    // frequency in MHz
-    int TXpowerHi = 20;
-    int TXpowerLo = 10;
+    int TXpowerHi = 20;         // High power in dBm (max 20)
+    int TXpowerLo = 10;         // Low power in dBm
