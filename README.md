@@ -16,6 +16,7 @@ It will start immediately to send a carrier at +20dBm during 10 s on 433.775 MHz
 
 # Settings
 ----
+
 //#define tbeam
 #define T3
 // comment out if using SSD1306 driver. 1.3" inch uses SH11106
