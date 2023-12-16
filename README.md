@@ -1,21 +1,22 @@
 # TTGO-TX-power-test
-A small software to be able to measure the output power of LoRa modules
+A small software to be able to measure the output power and frequency accuracy of LoRa modules
 Tested on Lilygo T3 and Lilygo T-beam modules.
 
 # Why ?
-It's difficult to measure the real power of a broad RF signal like used with LoRa APRS.
-It's easier to do that with a continuous carrier (CW).
-This software does produce a CW carrier at 2 different levels set to +20dBm and +10dBm during 10s.
+It's difficult to measure the real power of a broad RF signal like used with LoRa APRS. It's easier to do that with a continuous carrier (CW).
+It's even more difficult to get an idea of the frequency accuracy of the produced signal.
+This software does produce a CW carrier at 2 different levels set to +20dBm and +10dBm during 10s allowing to precisely measure the frequency and power.
 
 # How ?
-- Connect a Wattmeter (with a dummy load) to the antenna connector.
+- Connect a test bench or a Wattmeter and frequency meter (with a dummy load) to the antenna connector.
 - Load the software on Visual Studio Code with PlatformIO compiler.
 - Change to settings to fit your board. 
 - Load the software
-It will start immediately to send a carrier at +20dBm during 10s and than at +10dBm on 433.775 MHz. These are the default values that can be changed
+It will start immediately to send a carrier at +20dBm during 10s and than at +10dBm on 433.775 MHz. These are the default values that can be changed.
+You can now measure power and frequency.
 
 # Settings
-Change the first settings to fit to your board and needs.
+Change the settings on top of the script to fit to your board and needs.
 
     //#define tbeam               // if LilyGo T-beam
     #define T3                  // if LilyGo T3 board
