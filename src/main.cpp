@@ -255,41 +255,12 @@ void loop() {
   rtty.standby();
   display.clearDisplay();
 
-/*
-  // RTTYClient supports all methods of the Serial class
-
-  // Arduino String class
-  String aStr = "Arduino String";
-  rtty.println(aStr);
-
-  // character array (C-String)
-  rtty.println("C-String");
-
-  // string saved in flash
-  rtty.println(F("Flash String"));
-
-  // character
-  rtty.println('c');
-
-  // byte
-  // formatting DEC/HEX/OCT/BIN is supported for
-  // any integer type (byte/int/long)
-  rtty.println(255, HEX);
-
-  // integer number
-  int i = 1000;
-  rtty.println(i);
-
-  // floating point number
-  float f = -3.1415;
-  rtty.println(f, 3);
-*/
   // turn the transmitter off
   //rtty.standby();
 
   Serial.println(F("done!"));
 
-  // wait for a second before transmitting again
+  // wait a second
   delay(1000);
 }
 
