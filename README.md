@@ -25,5 +25,5 @@ Change the first settings to fit to your board and needs.
     int TXpowerHi = 20;         // High power in dBm (max 20)
     int TXpowerLo = 10;         // Low power in dBm
     
-[!NOTE]
+> [!NOTE]
 You can change the frequency, depending your LoRa band.
