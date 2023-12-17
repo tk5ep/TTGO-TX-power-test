@@ -45,38 +45,44 @@ String SOFTWARE_DATE = "16.12.23";
   #include <Adafruit_SH110X.h>
 #endif
 
+// PINs mapping
+// Lilygo modules have same pining, given for example if other modules 
+// Lilygo T-beam
 #ifdef tbeam
   // T-beam pins
-  #define I2C_SDA         21
-  #define I2C_SCL         22
+  // 0.96" OLED with SSD1306. 1.3" with SSD110X
+  //#define I2C_SDA         21
+  //#define I2C_SCL         22
   #define OLED_RST -1       // shared pin. pin 16 crashes
+  // LoRa radio
   #define LORA_SCK        5
   #define LORA_MISO       19
   #define LORA_MOSI       27
   #define LORA_SS         18
   #define LORA_DIO0       26
-  #define LORA_DIO1       33
-  #define LORA_DIO2       32
+  #define LORA_DIO1       33  // pin LoRa1 on header not connected to IO pin
+  //#define LORA_DIO2       32  // pin LoRa2 on header
   #define LORA_RST        23
 #endif
-
+// Lilygo T3
 #ifdef T3
+  // T3 pins
   // I2C OLED Display works with SSD1306 driver
-  //#define OLED_SDA 21
-  //#define OLED_SCL 22
-  #define OLED_RST -1
-
+  //#define OLED_SDA     21
+  //#define OLED_SCL     22
+  #define OLED_RST      -1
   // SPI LoRa Radio
-  #define LORA_SCK 5        // GPIO5 - SX1276 SCK
-  #define LORA_MISO 19     // GPIO19 - SX1276 MISO
-  #define LORA_MOSI 27    // GPIO27 - SX1276 MOSI
-  #define LORA_SS 18     // GPIO18 - SX1276 CS
-  #define LORA_DIO0 26
-  #define LORA_DIO1 33
-  #define LORA_RST 14   // GPIO14 - SX1276 RST
-  #define LORA_IRQ 26  // GPIO26 - SX1276 IRQ (interrupt request)
+  #define LORA_SCK      5
+  #define LORA_MISO     19
+  #define LORA_MOSI     27
+  #define LORA_SS       18
+  #define LORA_DIO0     26
+  #define LORA_DIO1     33  // pin LoRa1 on header not connected to IO pin
+  //#define LORA_DIO2     32  // pin LoRa2 on header
+  #define LORA_RST      23
 #endif
 
+// OLED line variables
 String line1 = "";
 String line2 = "";
 String line3 = "";
@@ -84,21 +90,20 @@ String line4 = "";
 String line5 = "";
 String line6 = "";
 
-//SX1278 radio = new Module(10, 2, 9, 3);
-SX1278 radio = new Module(LORA_SS, LORA_DIO0, LORA_RST, LORA_DIO1);
-
 // DISPLAY SSD1306
-
 #define SCREEN_WIDTH 128  // OLED display width, in pixels
 #define SCREEN_HEIGHT 64  // OLED display height, in pixels
 
+// instance for LoRa module
+SX1278 radio = new Module(LORA_SS, LORA_DIO0, LORA_RST, LORA_DIO1);
+// instance for OLED
 #ifdef ssd1306
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
+  Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 #else
-Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
+  Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 #endif
 
-// create RTTY client instance using the FSK module
+// instance using the FSK module
 RTTYClient rtty(&radio);
 
 /*****************************
@@ -113,23 +118,21 @@ RTTYClient rtty(&radio);
 ******************************/
 void setup() {
   Serial.begin(115200);
-  
-  
+  // init OLED
   #ifdef ssd1306
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c))
+    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c))
   #else
-  display.begin(0x3c, true); // Address 0x3C default
+    display.begin(0x3c, true); // Address 0x3C default
   #endif
 
-  // boot info page on OLED
+  // OLED setting
   display.clearDisplay();
-  
-  #ifdef ssd1306
-  display.setTextColor(WHITE);
+    #ifdef ssd1306
+    display.setTextColor(WHITE);
   #else
-  display.setTextColor(SH110X_WHITE);
+    display.setTextColor(SH110X_WHITE);
   #endif
-
+  // boot info page on OLED
   display.setTextSize(2);
   display.clearDisplay();             // mandatory to remove Adafruit splash
   line1 = "TTGO TX";
@@ -141,18 +144,14 @@ void setup() {
   display.setTextSize(1);
   display.setCursor(0, 20);
   display.print(line2);
-
-  
   display.setCursor(0,40);
   display.print(line3);
   display.setCursor(0, 56);
-  
   display.print(line4);
   display.display();
   delay(5000);
 
   display.clearDisplay();
-  //display.setTextColor(SH110X_WHITE);
   display.setTextSize(1);
   display.setCursor(0, 0);
   
@@ -174,16 +173,13 @@ void setup() {
     Serial.println(state);
     display.setCursor(0, 10);
     line2="failed code " + state ;
-        while(true);
+    while(true);
   }
 
   display.display();
 
-  //radio.setOutputPower(20);
-
   // initialize RTTY client
   Serial.print(F("[RTTY] Initializing ... "));
-  
   display.setCursor(0,30);
   line3="RTTY initializing :";
   display.print(line3);
@@ -221,9 +217,13 @@ void setup() {
                   |_|    
 *****************************/
 void loop() {
+  radio.setOutputPower(TXpowerHi);
+  double WattsHi = pow( 10.0, (TXpowerHi - 30.0) / 10.0) * 1000;
+
   Serial.print(F("Transmitting a CW carrier ... "));
   line1 = "TXing CW carrier";
   line2 = "+" + String(TXpowerHi) +"dBm";
+  line3 = String(WattsHi) + " mW";  
   radio.setOutputPower(TXpowerHi);
   display.setTextSize(1);
   display.setCursor(0,10);
@@ -231,36 +231,38 @@ void loop() {
   display.setTextSize(2);
   display.setCursor(0,30);
   display.print(line2);
+  display.setCursor(0,50);
+  display.print(line3);
   display.display();
 
   rtty.idle();
   delay(TXdelay);
   rtty.standby();
 
-  radio.setOutputPower(TXpowerLo);
+  radio.setOutputPower(TXpowerLo);                                // set the output power
+  double WattsLo = pow( 10.0, (TXpowerLo - 30.0) / 10.0) * 1000;  // dBm to mw conversion
 
   display.clearDisplay();
   line1 = "TXing CW carrier";
   line2 = "+" + String(TXpowerLo) + "dBm";
+  line3 = String(WattsLo) + " mW";
   display.setCursor(0,10);
   display.setTextSize(1);
   display.print(line1);
   display.setCursor(0,30);
   display.setTextSize(2);
   display.print(line2);
+  display.setCursor(0,50);
+  display.print(line3);
   display.display();
 
-  rtty.idle();
-  delay(TXdelay);
-  rtty.standby();
+  rtty.idle();              // transmitting
+  delay(TXdelay);           // during this time
+  //rtty.standby();         // turn the transmitter off
   display.clearDisplay();
-
-  // turn the transmitter off
-  //rtty.standby();
 
   Serial.println(F("done!"));
 
-  // wait a second
-  delay(1000);
+  // wait a second 
+  //delay(1000);
 }
-
