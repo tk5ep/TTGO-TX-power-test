@@ -31,6 +31,6 @@ Change the settings on top of the script to fit to your board and needs.
 > [!NOTE]
 You must change the frequency, depending of your LoRa band supported by your LoRa module.
 
-![](TXpower-screen.JPG)
+![](TXpower_screen.JPG)
 
 Feedbacks are welcome.  
