@@ -21,7 +21,7 @@ After initializings, the transmission will start immediately with a carrier on 4
 
 These are the default values that can be changed.
 
-You can now measure power and frequency.
+You can now measure power and frequency. On the above sprectum, the frequency is a bit off and the 2 different tones used for the 2 powers.
 
 # Settings
 Change the settings on top of the script to fit to your board and needs.
