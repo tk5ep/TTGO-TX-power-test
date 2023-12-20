@@ -16,8 +16,10 @@ This software does produce a CW carrier at 2 different levels set to +20dBm and 
 - Load the software on Visual Studio Code with PlatformIO compiler.
 - Change to settings to fit your board. 
 - Load the software
-- 
-It will start immediately to send a carrier at +20dBm during 10s and than at +10dBm on 433.775 MHz. These are the default values that can be changed.
+ 
+After initializings, the transmission will start immediately with a carrier on 433.775 MHz at +20dBm modulated at 1500 Hz during 10s and than at +10dBm modulated at 1000Hz during 10s.
+
+These are the default values that can be changed.
 
 You can now measure power and frequency.
 
