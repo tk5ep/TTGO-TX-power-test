@@ -18,7 +18,7 @@ This software does alternatively produce a FM carrier at 2 different levels set 
 - Change to settings to fit your board. (see below)
 - Load the software
  
-After initializings, the transmission will start immediately with a carrier on 433.775 MHz at +20dBm modulated at 1500 Hz during 10s and than at +10dBm modulated at 1000Hz during 10s.
+After initializings, the transmission will start immediately and cyclically during 10s with a carrier on 433.775 MHz at +20dBm modulated at 1500 Hz during 10s and than at +10dBm modulated at 1000Hz.
 
 These are the default values that can be changed.
 
