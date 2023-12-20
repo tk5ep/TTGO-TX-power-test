@@ -1,11 +1,10 @@
-/*
+ /*
 Small software to test the output power of LoRa modules like Lilygo T3 and T-beam
 It transmits alternatively a carrier at 2 power levels (TXpowerHi & TXpowerLo) during a certain time (TXdelay) on frequency (TXfreq)
 
 written by TK5EP dec 2023
 https://egloff.eu
 https://github.com/tk5ep
-
 */
 
 
@@ -17,8 +16,8 @@ https://github.com/tk5ep
 |____/ \___|\__|\__|_|_| |_|\__, |___/
                             |___/ 
 ****************************************/
-#define tbeam               // LilyGo T-beam board. Comment out for this board
-//#define T3                 // LilyGo T3 board. Comment out for this board
+#define Lilygo_tbeam               // LilyGo T-beam board. Comment out for this board
+//#define Lilygo_T3                 // LilyGo T3 board. Comment out for this board
 //#define ssd1306            // defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
 int TXdelay   = 10000;      // TX delay in ms at each power
 double TXfreq = 433.775;    // frequency in MHz
@@ -33,22 +32,21 @@ int TXpowerLo = 10;         // Low power level in dBm
  \____\___/|_| |_|_| |_|\__, |
                         |___/ 
 *****************************************/
-
+// include the libraries
+#include <Arduino.h>
 #include <RadioLib.h>
-#include <Wire.h>
-
-String SOFTWARE_DATE = "16.12.23";
-
 #ifdef ssd1306
   #include <Adafruit_SSD1306.h>
 #else
   #include <Adafruit_SH110X.h>
 #endif
 
+String SOFTWARE_DATE = "20.12.23";
+
 // PINs mapping
 // Lilygo modules have same pining, given for example if other modules 
 // Lilygo T-beam
-#ifdef tbeam
+#ifdef Lilygo_tbeam
   // T-beam pins
   // 0.96" OLED with SSD1306. 1.3" with SSD110X
   //#define I2C_SDA         21
@@ -65,7 +63,7 @@ String SOFTWARE_DATE = "16.12.23";
   #define LORA_RST        23
 #endif
 // Lilygo T3
-#ifdef T3
+#ifdef Lilygo_T3
   // T3 pins
   // I2C OLED Display works with SSD1306 driver
   //#define OLED_SDA     21
@@ -89,22 +87,23 @@ String line3 = "";
 String line4 = "";
 String line5 = "";
 String line6 = "";
-
 // DISPLAY SSD1306
 #define SCREEN_WIDTH 128  // OLED display width, in pixels
 #define SCREEN_HEIGHT 64  // OLED display height, in pixels
-
-// instance for LoRa module
-SX1278 radio = new Module(LORA_SS, LORA_DIO0, LORA_RST, LORA_DIO1);
-// instance for OLED
 #ifdef ssd1306
   Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 #else
   Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 #endif
 
-// instance using the FSK module
-RTTYClient rtty(&radio);
+// init radio instance
+SX1278 radio = new Module(LORA_SS, LORA_DIO0, LORA_RST, LORA_DIO1);
+
+// create AFSK client instance using the FSK module
+// this requires connection to the module direct
+// input pin, here connected to Arduino pin 5
+// SX127x/RFM9x:  DIO2
+AFSKClient audio(&radio,32);
 
 /*****************************
  _____      _               
@@ -118,6 +117,9 @@ RTTYClient rtty(&radio);
 ******************************/
 void setup() {
   Serial.begin(115200);
+
+//ledcAttachPin(LORA_DIO1, 0);
+
   // init OLED
   #ifdef ssd1306
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c))
@@ -154,7 +156,7 @@ void setup() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setCursor(0, 0);
-  
+
   // initialize SX1278 with default settings
   Serial.print(F("[SX1278] Initializing ... "));
   line1 = "SX1278 initializing :";
@@ -162,47 +164,61 @@ void setup() {
   display.display();
 
   int state = radio.beginFSK();
-
   if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
-    display.setCursor(0, 10);
+        display.setCursor(0, 10);
     line2="success";
     display.print(line2);
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
+    Serial.println(state);
     display.setCursor(0, 10);
     line2="failed code " + state ;
     while(true);
   }
-
   display.display();
 
-  // initialize RTTY client
-  Serial.print(F("[RTTY] Initializing ... "));
-  display.setCursor(0,30);
-  line3="RTTY initializing :";
+state = radio.setFrequency(TXfreq);
+    if(state == RADIOLIB_ERR_NONE) {
+    Serial.println(String(TXfreq,3) + " frequency setting success!");
+  } else {
+    Serial.print(F("Frequency setting failed, code "));
+    Serial.println(state);
+    while(true);
+  }
+
+  // initialize AFSK client
+  Serial.print(F("[AFSK] Initializing ... "));
+    display.setCursor(0,30);
+  line3="AFSK initializing :";
   display.print(line3);
   display.display();
-
-  state = rtty.begin(TXfreq, 850, 45);  // shift 850 Hz à 45 bauds (not used here)
+  state = audio.begin();
   if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
-    line4="success";
+        line4="success";
     display.setCursor(0, 40);
     display.print(line4);
-    display.display();
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    line4="failed " + state;
+        line4="failed " + state;
     display.setCursor(0, 40);
     display.print(line4);
-    display.display();
     while(true);
   }
-  delay(3000);
 
+  state = audio.begin();
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("Audio begin success!"));
+  } else {
+    Serial.print(F("Audio begin failed, code "));
+    Serial.println(state);
+    //while(true);
+  }
+  display.display();
+  delay(3000);
   display.clearDisplay();
 }
 
@@ -217,14 +233,26 @@ void setup() {
                   |_|    
 *****************************/
 void loop() {
-  radio.setOutputPower(TXpowerHi);
+  display.clearDisplay();
+  int state = radio.setOutputPower(TXpowerHi);
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.println("+" +String(TXpowerHi) + "dBm power setting success!");
+  } else {
+    Serial.print(F("Power setting failed, code "));
+    Serial.println(state);
+    //while(true);
+  }
+  // convert dBm to mW
   double WattsHi = pow( 10.0, (TXpowerHi - 30.0) / 10.0) * 1000;
 
-  Serial.print(F("Transmitting a CW carrier ... "));
-  line1 = "TXing CW carrier";
+  // 1500 Hz tone
+  Serial.println(F("Generating 1500 Hz tone ... "));
+  audio.tone(1500);
+
+  Serial.println("Transmitting +" + String(TXpowerHi) +"dBm FM carrier ... ");
+  line1 = "TXing FM carrier";
   line2 = "+" + String(TXpowerHi) +"dBm";
   line3 = String(WattsHi) + " mW";  
-  radio.setOutputPower(TXpowerHi);
   display.setTextSize(1);
   display.setCursor(0,10);
   display.print(line1);
@@ -235,15 +263,28 @@ void loop() {
   display.print(line3);
   display.display();
 
-  rtty.idle();
-  delay(TXdelay);
-  rtty.standby();
+  delay(10000);
+  
+  // stop transmitting to be able to change power setting
+  radio.receiveDirect();
 
-  radio.setOutputPower(TXpowerLo);                                // set the output power
+  Serial.println(F("Generating 1000 Hz tone ... "));
+  audio.tone(1000);
+
+  state = radio.setOutputPower(TXpowerLo);
+      if(state == RADIOLIB_ERR_NONE) {
+    Serial.println("+" + String(TXpowerLo) + "dBm power setting success!");
+  } else {
+    Serial.print(F("Power setting failed, code "));
+    Serial.println(state);
+    while(true);
+  }
+  // convert dBm to mW
   double WattsLo = pow( 10.0, (TXpowerLo - 30.0) / 10.0) * 1000;  // dBm to mw conversion
 
+  Serial.println("Transmitting +" + String(TXpowerLo) +"dBm FM carrier ... ");
   display.clearDisplay();
-  line1 = "TXing CW carrier";
+  line1 = "TXing FM carrier";
   line2 = "+" + String(TXpowerLo) + "dBm";
   line3 = String(WattsLo) + " mW";
   display.setCursor(0,10);
@@ -256,13 +297,7 @@ void loop() {
   display.print(line3);
   display.display();
 
-  rtty.idle();              // transmitting
-  delay(TXdelay);           // during this time
-  //rtty.standby();         // turn the transmitter off
-  display.clearDisplay();
+  radio.transmitDirect();
+  delay(10000);
 
-  Serial.println(F("done!"));
-
-  // wait a second 
-  //delay(1000);
 }
