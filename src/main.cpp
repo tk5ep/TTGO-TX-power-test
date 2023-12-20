@@ -1,4 +1,4 @@
- /*
+/*
 Small software to test the output power of LoRa modules like Lilygo T3 and T-beam
 It transmits alternatively a carrier at 2 power levels (TXpowerHi & TXpowerLo) during a certain time (TXdelay) on frequency (TXfreq)
 
@@ -243,7 +243,7 @@ void loop() {
     //while(true);
   }
   // convert dBm to mW
-  double WattsHi = pow( 10.0, (TXpowerHi - 30.0) / 10.0) * 1000;
+  double WattsHi = pow(10.0, (TXpowerHi - 30.0) / 10.0) * 1000;
 
   // 1500 Hz tone
   Serial.println(F("Generating 1500 Hz tone ... "));
