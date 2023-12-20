@@ -1,7 +1,8 @@
 ![](TX-spectrum.jpg)
 
 # What is it ?
-A small software written for PlatformIO to be able to measure the output power and frequency of LoRa modules
+A small software written for PlatformIO to be able to measure the output power and frequency of LoRa modules.
+
 Tested on Lilygo T3 and Lilygo T-beam modules.
 
 # Why ?
