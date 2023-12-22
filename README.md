@@ -10,7 +10,7 @@ It's difficult to measure the real power of a broad RF signal and during packet 
 
 It's even more difficult to get an idea of the frequency accuracy of the produced signal.
 
-This software does alternatively produce a FM carrier at 2 different levels set to +20dBm with 1500Hz modulation and +10dBm with 1000Hz modulation during 10s allowing to precisely measure the frequency and power.
+This software does cyclically produce a FM carrier at as many power levels you want, allowing to precisely measure the frequency and power.
 
 # How ?
 - Connect a test bench or a Wattmeter and frequency meter (with a dummy load) to the antenna connector.
@@ -18,22 +18,31 @@ This software does alternatively produce a FM carrier at 2 different levels set 
 - Change to settings to fit your board. (see below)
 - Load the software
  
-After initializings, the transmission will start immediately and cyclically during 10s with a carrier on 433.775 MHz at +20dBm modulated at 1500 Hz during 10s and than at +10dBm modulated at 1000Hz.
+After initializings, the transmission will start immediately a carrier on 433.775 MHz (see settings).
 
-These are the default values that can be changed.
+It cyclically transmits at all power levels declared in the settings. Each step lasts the time set (2s by default) modulated with increasing audio frequency (by default 1000Hz at start).
 
 You can now measure power and frequency. On the above sprectum, you can see that the frequency is a bit off and the 2 different tones used for the 2 powers.
 
 # Settings
 Change the settings on top of the script to fit to your board and needs.
 
-    //#define tbeam               // if LilyGo T-beam
-    #define T3                  // if LilyGo T3 board
-    #define ssd1306;            // defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
-    int TXdelay   = 10000;      // TX delay in ms at each power
-    double TXfreq = 433.775;    // frequency in MHz
-    int TXpowerHi = 20;         // High power in dBm (max 20)
-    int TXpowerLo = 10;         // Low power in dBm
+    // If LilyGo T-beam board. Comment out for this board
+    //#define Lilygo_tbeam
+    // If LilyGo T3 board. Comment out for this board
+    #define Lilygo_T3
+    // defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
+    #define ssd1306
+    // TX delay in ms at each power
+    int TXdelay   = 2000;
+    // TX frequency in MHz
+    double TXfreq = 433.775;
+    // audio start frequency in Hz
+    int TXtonebase = 1000;
+    // audio step in Hz
+    int TXtonestep = 100;
+    // array in which all desired power levels are given in dBm
+    const int PowerArray [] = {2,4,6,8,10,17,20};
 
 ie. The upper lines are for a T3 module with a SSD1306 (on board) OLED.
     
