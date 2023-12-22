@@ -16,13 +16,21 @@ https://github.com/tk5ep
 |____/ \___|\__|\__|_|_| |_|\__, |___/
                             |___/ 
 ****************************************/
-//#define Lilygo_tbeam               // LilyGo T-beam board. Comment out for this board
-#define Lilygo_T3                 // LilyGo T3 board. Comment out for this board
-#define ssd1306            // defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
-int TXdelay   = 2000;      // TX delay in ms at each power
-double TXfreq = 433.775;    // frequency in MHz
-int TXtonebase = 1000;          // audio start frequency
+// If LilyGo T-beam board. Comment out for this board
+//#define Lilygo_tbeam
+// If LilyGo T3 board. Comment out for this board
+#define Lilygo_T3
+// defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
+#define ssd1306
+// TX delay in ms at each power
+int TXdelay   = 2000;
+// TX frequency in MHz
+double TXfreq = 433.775;
+// audio start frequency in Hz
+int TXtonebase = 1000;
+// audio step in Hz
 int TXtonestep = 100;
+// array in which all desired power levels are given in dBm
 const int PowerArray [] = {2,4,6,8,10,17,20};
 
 /*****************************************
@@ -42,7 +50,7 @@ const int PowerArray [] = {2,4,6,8,10,17,20};
   #include <Adafruit_SH110X.h>
 #endif
 
-String SOFTWARE_DATE = "20.12.23";
+String SOFTWARE_DATE = "22.12.23";
 
 // PINs mapping
 // Lilygo modules have same pining, given for example if other modules 
@@ -168,22 +176,25 @@ void setup() {
   int state = radio.beginFSK();
   if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
-        display.setCursor(0, 10);
+    display.setCursor(0, 10);
     line2="success";
     display.print(line2);
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    Serial.println(state);
+    line2="failed code " + String(state) ;
+    line3="Stopping execution";
     display.setCursor(0, 10);
-    line2="failed code " + state ;
+    display.print(line2);
+    display.setCursor(0, 30);
+    display.print(line3);
     while(true);
   }
-  // set current limiter to at least 150mA
-  radio.setCurrentLimit(150);
-  display.display();
-  // set the frequency
-  state = radio.setFrequency(TXfreq);
+      display.display();
+
+  radio.setCurrentLimit(150);           // set current limiter to at least 150mA
+  //radio.setFrequencyDeviation(10);     // set FM deviation
+  state = radio.setFrequency(TXfreq);   // set the frequency
     if(state == RADIOLIB_ERR_NONE) {
     Serial.println(String(TXfreq,3) + " frequency setting success!");
   } else {
@@ -194,24 +205,25 @@ void setup() {
 
   // initialize AFSK client
   Serial.print(F("[AFSK] Initializing ... "));
-    display.setCursor(0,30);
+  display.setCursor(0,30);
   line3="AFSK initializing :";
   display.print(line3);
   display.display();
   state = audio.begin();
   if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
-        line4="success";
+    line4="success";
     display.setCursor(0, 40);
     display.print(line4);
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-        line4="failed " + state;
+    line4="failed " + String(state);
     display.setCursor(0, 40);
     display.print(line4);
     while(true);
   }
+  display.display();
 
   state = audio.begin();
   if(state == RADIOLIB_ERR_NONE) {
@@ -221,11 +233,11 @@ void setup() {
     Serial.println(state);
     //while(true);
   }
-  display.display();
+
   delay(3000);
   display.clearDisplay();
-  
-}
+
+} // END setup()
 
 /*****************************
  _                       
@@ -261,7 +273,7 @@ radio.transmitDirect();
 
   Serial.println("Transmitting +" + String(TXpower) +"dBm FM carrier ...\n ");
   line1 = "TXing FM carrier";
-  line2 = "+" + String(TXpower) +"dBm";
+  line2 = "+" + String(TXpower) +" dBm";
   line3 = String(TXWatts) + " mW";  
   display.setTextSize(1);
   display.setCursor(0,10);
@@ -276,7 +288,7 @@ radio.transmitDirect();
   delay(TXdelay);
   
   // stop transmitting to be able to change power setting
-  radio.receiveDirect();
+  radio.standby();
   TXtone = TXtone + TXtonestep;
 } // END for loop
 } // END loop()
