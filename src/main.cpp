@@ -16,13 +16,14 @@ https://github.com/tk5ep
 |____/ \___|\__|\__|_|_| |_|\__, |___/
                             |___/ 
 ****************************************/
-#define Lilygo_tbeam               // LilyGo T-beam board. Comment out for this board
-//#define Lilygo_T3                 // LilyGo T3 board. Comment out for this board
-//#define ssd1306            // defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
-int TXdelay   = 10000;      // TX delay in ms at each power
+//#define Lilygo_tbeam               // LilyGo T-beam board. Comment out for this board
+#define Lilygo_T3                 // LilyGo T3 board. Comment out for this board
+#define ssd1306            // defines the OLED driver type comment out if using SSD1306 driver. Comment if 1.3" inch uses SH11106
+int TXdelay   = 2000;      // TX delay in ms at each power
 double TXfreq = 433.775;    // frequency in MHz
-int TXpowerHi = 20;         // High power level in dBm (max 20)
-int TXpowerLo = 10;         // Low power level in dBm
+int TXtonebase = 1000;          // audio start frequency
+int TXtonestep = 100;
+const int PowerArray [] = {2,4,6,8,10,17,20};
 
 /*****************************************
   ____             __ _       
@@ -138,18 +139,19 @@ void setup() {
   display.setTextSize(2);
   display.clearDisplay();             // mandatory to remove Adafruit splash
   line1 = "TTGO TX";
-  line2 = "RF power test";
-  line3 = "@ +" + String(TXpowerHi) +"dBm & +" + String(TXpowerLo) +"dBm";
-  line4 = "by TK5EP v" + SOFTWARE_DATE;
+  line2 = "Sends FM carrier at";
+  line3 = "different levels";
+  line4 = "";
+  line5 = "by TK5EP v" + SOFTWARE_DATE;
   display.setCursor(0, 0);
   display.print(line1);
   display.setTextSize(1);
   display.setCursor(0, 20);
   display.print(line2);
-  display.setCursor(0,40);
+  display.setCursor(0,30);
   display.print(line3);
   display.setCursor(0, 56);
-  display.print(line4);
+  display.print(line5);
   display.display();
   delay(5000);
 
@@ -177,9 +179,11 @@ void setup() {
     line2="failed code " + state ;
     while(true);
   }
+  // set current limiter to at least 150mA
+  radio.setCurrentLimit(150);
   display.display();
-
-state = radio.setFrequency(TXfreq);
+  // set the frequency
+  state = radio.setFrequency(TXfreq);
     if(state == RADIOLIB_ERR_NONE) {
     Serial.println(String(TXfreq,3) + " frequency setting success!");
   } else {
@@ -220,6 +224,7 @@ state = radio.setFrequency(TXfreq);
   display.display();
   delay(3000);
   display.clearDisplay();
+  
 }
 
 /*****************************
@@ -233,26 +238,31 @@ state = radio.setFrequency(TXfreq);
                   |_|    
 *****************************/
 void loop() {
+  int TXtone = TXtonebase;
+
+  for (int TXpower : PowerArray) { // for each element in the array
   display.clearDisplay();
-  int state = radio.setOutputPower(TXpowerHi);
+  Serial.println("Generating " + String(TXtone) + "Hz tone ... ");
+
+  audio.tone(TXtone);
+
+  int state = radio.setOutputPower(TXpower);
   if(state == RADIOLIB_ERR_NONE) {
-    Serial.println("+" +String(TXpowerHi) + "dBm power setting success!");
+    Serial.println("+" +String(TXpower) + "dBm power setting success!");
   } else {
     Serial.print(F("Power setting failed, code "));
     Serial.println(state);
     //while(true);
   }
   // convert dBm to mW
-  double WattsHi = pow(10.0, (TXpowerHi - 30.0) / 10.0) * 1000;
+  double TXWatts = pow(10.0, (TXpower - 30.0) / 10.0) * 1000;
 
-  // 1500 Hz tone
-  Serial.println(F("Generating 1500 Hz tone ... "));
-  audio.tone(1500);
+radio.transmitDirect();
 
-  Serial.println("Transmitting +" + String(TXpowerHi) +"dBm FM carrier ... ");
+  Serial.println("Transmitting +" + String(TXpower) +"dBm FM carrier ...\n ");
   line1 = "TXing FM carrier";
-  line2 = "+" + String(TXpowerHi) +"dBm";
-  line3 = String(WattsHi) + " mW";  
+  line2 = "+" + String(TXpower) +"dBm";
+  line3 = String(TXWatts) + " mW";  
   display.setTextSize(1);
   display.setCursor(0,10);
   display.print(line1);
@@ -263,41 +273,10 @@ void loop() {
   display.print(line3);
   display.display();
 
-  delay(10000);
+  delay(TXdelay);
   
   // stop transmitting to be able to change power setting
   radio.receiveDirect();
-
-  Serial.println(F("Generating 1000 Hz tone ... "));
-  audio.tone(1000);
-
-  state = radio.setOutputPower(TXpowerLo);
-      if(state == RADIOLIB_ERR_NONE) {
-    Serial.println("+" + String(TXpowerLo) + "dBm power setting success!");
-  } else {
-    Serial.print(F("Power setting failed, code "));
-    Serial.println(state);
-    while(true);
-  }
-  // convert dBm to mW
-  double WattsLo = pow( 10.0, (TXpowerLo - 30.0) / 10.0) * 1000;  // dBm to mw conversion
-
-  Serial.println("Transmitting +" + String(TXpowerLo) +"dBm FM carrier ... ");
-  display.clearDisplay();
-  line1 = "TXing FM carrier";
-  line2 = "+" + String(TXpowerLo) + "dBm";
-  line3 = String(WattsLo) + " mW";
-  display.setCursor(0,10);
-  display.setTextSize(1);
-  display.print(line1);
-  display.setCursor(0,30);
-  display.setTextSize(2);
-  display.print(line2);
-  display.setCursor(0,50);
-  display.print(line3);
-  display.display();
-
-  radio.transmitDirect();
-  delay(10000);
-
-}
+  TXtone = TXtone + TXtonestep;
+} // END for loop
+} // END loop()
