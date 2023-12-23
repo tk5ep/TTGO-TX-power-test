@@ -24,6 +24,8 @@ It cyclically transmits at all power levels declared in the settings. Each step 
 
 You can now measure power and frequency. On the above sprectum, you can see that the frequency is a bit off and the 2 different tones used for the 2 powers.
 
+All infos are available on the OLES screen as well as on the serial port at a speed of 115200 bauds.
+
 # Settings
 Change the settings on top of the script to fit to your board and needs.
 
